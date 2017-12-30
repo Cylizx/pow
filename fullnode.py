@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from pow.pow import *
-import json,time
+import json,time,os
 class Fullnode:
     def __init__(self):
         self.prev_hash="aaa"
@@ -57,12 +57,16 @@ class Fullnode:
         self.flag_restart_mining=True
 
     def load_addr(self,file_name):
-        with open(file_name,'r') as f:
-            self.addr=json.load(f)[0]
+        if os.path.exists(file_name):
+            with open(file_name,'r') as f:
+                self.addr=json.load(f)[0]
 
     def load_latest_block(self):
-        with open('block/head.json','r') as f:
-            self.prev_hash=json.load(f)[0]
+        if os.path.exists('block/head.json'):
+            with open('block/head.json','r') as f:
+                self.prev_hash=json.load(f)[0]
+        else:
+            self.prev_hash='aaa'
 
     def update_block_list(self):
         self.block_list.clear()
