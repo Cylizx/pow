@@ -10,6 +10,7 @@ class Fullnode:
         self.flag_restart_mining=False
         self.addr=""
         self.block_list=[]
+        self.key=""
 
     def start_mining(self):
         self.flag_mining=True
@@ -60,6 +61,17 @@ class Fullnode:
         if os.path.exists(file_name):
             with open(file_name,'r') as f:
                 self.addr=json.load(f)[0]
+    def load_key(self,file_name):
+        if os.path.exists(file_name):
+            with open(file_name,'r') as f:
+                self.key=json.load(f)[0]
+                self.addr=get_addr_from_sk(self.key)
+
+    def create_transaction(self,dst_addr,value):
+        if self.key == "":
+            return None
+        else:
+            return create_transaction(self.addr,dst_addr,value,self.key)
 
     def load_latest_block(self):
         if os.path.exists('block/head.json'):
@@ -87,8 +99,10 @@ class Fullnode:
                     tr = load_transaction(tr_hash)
                     if tr['dst_addr'] == addr:
                         value = value + tr['value']
+                        print('----> ' + str(tr['value']))
                     elif 'src_addr' in tr.keys() and tr['src_addr'] == addr:
                         value = value - tr['value']
+                        print('<---- ' + str(tr['value']))
         return value
 
 
