@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 from pow.pow import *
-import json,time,os
+from messages import *
+from network import *
+import json,time,os,_thread
 class Fullnode:
     def __init__(self):
         self.prev_hash="aaa"
@@ -11,6 +13,9 @@ class Fullnode:
         self.addr=""
         self.block_list=[]
         self.key=""
+
+    def start_listening(self,port=10086):
+        _thread.start_new_thread(init,(port,))
 
     def start_mining(self):
         self.flag_mining=True
@@ -32,8 +37,11 @@ class Fullnode:
                 r = mining_once(block)
                 if r is not None:
                     #send block to network
+
                     block_hash = save_block(r)
                     save_block_transaction_info(block_hash, hash_list)
+                    block_message = BlocksMessage([block_hash,hash_list])
+                    #broadcast_message(BlocksMessage)
                     self.prev_hash=block_hash
                     self.block_list.append(block_hash)
                     with open('block/head.json','w') as f:
@@ -42,6 +50,7 @@ class Fullnode:
                         save_transaction(tr)
                     self.transaction_list.clear()
                     break
+                self.check_transaction()
                 
 
     def restart_mining(self,block_hash):
@@ -52,10 +61,14 @@ class Fullnode:
         self.flag_mining=False
         self.flag_restart_mining=True
 
-    def add_transaction(self,tr):
-        del self.transaction_list[0]
-        self.transaction_list.append(tr)
-        self.flag_restart_mining=True
+    def check_transaction(self):
+        if os.path.exists('transaction/new.json'):
+            with open('transaction/new.json','r') as f:
+                del self.transaction_list[0]
+                self.transaction_list.append(json.load(f))
+            os.remove('transaction/new.json')
+            self.flag_restart_mining=True
+            print('transaction add')
 
     def load_addr(self,file_name):
         if os.path.exists(file_name):
@@ -99,10 +112,10 @@ class Fullnode:
                     tr = load_transaction(tr_hash)
                     if tr['dst_addr'] == addr:
                         value = value + tr['value']
-                        print('----> ' + str(tr['value']))
+                        #print('----> ' + str(tr['value']))
                     elif 'src_addr' in tr.keys() and tr['src_addr'] == addr:
                         value = value - tr['value']
-                        print('<---- ' + str(tr['value']))
+                        #print('<---- ' + str(tr['value']))
         return value
 
 
