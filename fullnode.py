@@ -23,7 +23,7 @@ class Fullnode:
             gen_tr={}
             gen_tr['dst_addr']=self.addr
             gen_tr['value']=25
-            gen_tr['timestam']=int(time.time())
+            gen_tr['timestamp']=int(time.time())
             self.transaction_list.insert(0,gen_tr)
 
             block=create_block()
@@ -62,13 +62,18 @@ class Fullnode:
         self.flag_restart_mining=True
 
     def check_transaction(self):
-        if os.path.exists('transaction/new.json'):
-            with open('transaction/new.json','r') as f:
-                del self.transaction_list[0]
-                self.transaction_list.append(json.load(f))
-            os.remove('transaction/new.json')
-            self.flag_restart_mining=True
-            print('transaction add')
+        try:
+            os.stat('transaction/new.json')
+        except:
+            return            
+        print('reading new transaction')
+        time.sleep(1)
+        with open('transaction/new.json','r') as f:
+            del self.transaction_list[0]
+            self.transaction_list.append(json.load(f))
+        os.remove('transaction/new.json')
+        self.flag_restart_mining=True
+        print('transaction addedd')
 
     def load_addr(self,file_name):
         if os.path.exists(file_name):
