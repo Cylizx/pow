@@ -70,7 +70,9 @@ class Fullnode:
         time.sleep(1)
         with open('transaction/new.json','r') as f:
             del self.transaction_list[0]
-            self.transaction_list.append(json.load(f))
+            tr = json.load(f)
+            if tr not in self.transaction_list:
+                self.transaction_list.append(tr)
         os.remove('transaction/new.json')
         self.flag_restart_mining=True
         print('transaction addedd')

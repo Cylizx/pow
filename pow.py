@@ -42,6 +42,7 @@ def create_transaction(src_addr,dst_addr, value, key):
     tr['src_addr']=src_addr
     tr['dst_addr']=dst_addr
     tr['value']=value
+    tr['timestamp']=time.time()
     tr_hash=hashlib.sha256(json.dumps(tr).encode('ascii','ignore')).hexdigest()
     tr['pubkey']=get_pubkey(key)
     tr['sig']=bytes.hex(ecdsa.SigningKey.from_string(bytes.fromhex(key),curve=ecdsa.SECP256k1).sign(tr_hash.encode('ascii','ignore')))
@@ -52,6 +53,7 @@ def verify_transaction(tr):
     ttr['src_addr']=tr['src_addr']
     ttr['dst_addr']=tr['dst_addr']
     ttr['value']=tr['value']
+    ttr['timestamp']=tr['timestamp']
     tr_hash=hashlib.sha256(json.dumps(ttr).encode('ascii','ignore')).hexdigest()
     sig=bytes.fromhex(tr['sig'])
     vk=ecdsa.VerifyingKey.from_string(bytes.fromhex(tr['pubkey']), curve=ecdsa.SECP256k1)
